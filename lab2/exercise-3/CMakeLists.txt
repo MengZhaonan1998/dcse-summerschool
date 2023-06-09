@@ -1,17 +1,7 @@
-# Copyright 2021 Alexander Heinlein
-# Contact: Alexander Heinlein (a.heinlein@tudelft.nl)
+project(DCSE_Summerschool_Lab2 CXX)
+cmake_minimum_required(VERSION 3.10)
 
-# Checking the CMake version
-cmake_minimum_required(VERSION 3.17)
-
-project("FROSch Example")
-
-# Looking for Trilinos and printing of the corresponding parameters
-if(NOT DEFINED Trilinos_DIR)
-  set(Trilinos_DIR "${Trilinos_PATH}/include")
-endif()
-set(CMAKE_PREFIX_PATH ${Trilinos_PATH} ${CMAKE_PREFIX_PATH})
-find_package(Trilinos COMPONENTS REQUIRED ShyLU_DDFROSch)
+find_package(Trilinos REQUIRED COMPONENTS ShyLU_DDFROSch)
 
 IF(Trilinos_FOUND)
    MESSAGE("\nFound Trilinos!  Here are the details: ")
@@ -44,43 +34,13 @@ set(CMAKE_CXX_FLAGS "${Trilinos_CXX_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_C_COMPILER ${Trilinos_C_COMPILER})
 set(CMAKE_C_FLAGS "${Trilinos_C_COMPILER_FLAGS} ${CMAKE_C_FLAGS}")
 
-include_directories(".")
-include_directories(${Trilinos_TPL_INCLUDE_DIRS})
-include_directories(${Trilinos_INCLUDE_DIRS})
+# Test
+add_executable(main.x main.cpp)
 
-link_directories(${Trilinos_LIBRARY_DIRS})
-link_directories(${Trilinos_TPL_LIBRARY_DIRS})
+target_include_directories(main.x PRIVATE ${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
+target_link_libraries(main.x ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARY_DIRS})
 
-set(LIBS)
-
-list(APPEND LIBS ${Trilinos_LIBRARIES})
-list(APPEND LIBS ${Trilinos_TPL_LIBRARIES})
-
-# VTK
-IF(${VTK_ENABLE})
-  find_package(VTK REQUIRED)
-  include_directories(${VTK_INCLUDE_DIRS})
-  link_directories(${VTK_LIBRARY_DIRS})
-  list(APPEND LIBS ${VTK_LIBRARIES})
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D HAVE_VTK")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D HAVE_VTK")
-ENDIF()
-
-# Boost
-IF(${Boost_ENABLE})
-  find_package(Boost COMPONENTS system filesystem REQUIRED)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-  list(APPEND LIBS ${Boost_LIBRARIES})
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D HAVE_Boost")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D HAVE_Boost")
-ENDIF()
-
-list(REMOVE_DUPLICATES DIRS)
-
-enable_testing()
-
-add_subdirectory(exercise-1)
-add_subdirectory(exercise-2)
-add_subdirectory(exercise-3)
-add_subdirectory(solution)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/parameters-2d.xml
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/parameters-3d.xml
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
